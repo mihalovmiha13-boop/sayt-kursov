@@ -1,0 +1,399 @@
+Сделал категории переключателями: при выборе «Протеин», «BCAA» и т. д. показываются соответствующие товары, а каталог плавно исчезает и появляется. Добавил кнопку «Все товары».
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог спортпита — SportPower</title>
+
+    <style>
+        :root {
+            --primary: #ff5252;
+            --dark: #2c3e50;
+            --light: #f4f4f4;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0000FF;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .categories {
+            padding: 1.5rem 2rem;
+            background: var(--white);
+        }
+
+        .categories h2 {
+            margin-bottom: 1rem;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .category-card {
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: var(--white);
+            color: var(--dark);
+            font: inherit;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+        }
+
+        .category-card:hover {
+            border-color: var(--primary);
+            background-color: #fff8f8;
+            transform: translateY(-2px);
+        }
+
+        .category-card.active {
+            border-color: var(--primary);
+            background-color: #fff0f0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 2rem;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .products-grid.is-changing {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 200px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .product-info {
+            padding: 1.2rem;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .product-details {
+            display: inline-block;
+            margin: 0.8rem 1.2rem 0;
+            color: var(--dark);
+        }
+
+        .btn-buy {
+            display: block;
+            width: 100%;
+            padding: 0.7rem;
+            background: var(--primary);
+            color: var(--white);
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .btn-buy:hover {
+            background: #e04040;
+        }
+
+        footer {
+            background: var(--dark);
+            color: var(--white);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.8rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Кингмасс&nbsp;</div>
+
+        <nav>
+            <ul>
+                <li><a href="сайт.html">Главная</a></li>
+                <li><a href="#catalog">Каталог</a></li>
+                <li><a href="о_насс.html">О нас</a></li>
+                <li><a href="контакты.html">Контакты</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="categories">
+        <h2>Категории</h2>
+
+        <div class="category-grid">
+            <button class="category-card active" type="button" data-filter="all" aria-pressed="true">
+                Все товары
+            </button>
+            <button class="category-card" type="button" data-filter="protein" aria-pressed="false">
+                Протеин
+            </button>
+            <button class="category-card" type="button" data-filter="bcaa" aria-pressed="false">
+                BCAA / Аминокислоты
+            </button>
+            <button class="category-card" type="button" data-filter="creatine" aria-pressed="false">
+                Креатин
+            </button>
+            <button class="category-card" type="button" data-filter="gainer" aria-pressed="false">
+                Гейнеры
+            </button>
+            <button class="category-card" type="button" data-filter="vitamins" aria-pressed="false">
+                Витамины и минералы
+            </button>
+            <button class="category-card" type="button" data-filter="energy" aria-pressed="false">
+                Энергетики
+            </button>
+        </div>
+    </section>
+
+    <main id="catalog">
+        <h1>Каталог товаров</h1>
+
+        <div class="products-grid" id="products">
+            <article class="product-card" data-category="protein">
+                <div class="product-img">
+                    <img
+                        src="syvorotochnyj-protein-optimum-nutrition-100-whey-protein-gold-standard-465-g-double-rich-chocolate-eu.jpg"
+                        alt="Сывороточный протеин Whey Gold">
+                </div>
+                <a class="product-details" href="товар.html">Подробнее</a>
+                <div class="product-info">
+                    <h3 class="product-title">Сывороточный протеин Whey Gold</h3>
+                    <p>100% Whey Protein, 2 кг, ваниль</p>
+                    <div class="product-price">3 990 ₽</div>
+                    <a href="#" class="btn-buy">В корзину</a>
+                </div>
+            </article>
+
+            <article class="product-card" data-category="bcaa">
+                <div class="product-img">
+                    <img
+                        src="bd60ae3083d0ee531fa05e3224948faa_12653_1000_1000_tr.jpg"
+                        alt="BCAA 2:1:1 порошок">
+                </div>
+                <a class="product-details" href="контакты.html">Подробнее</a>
+                <div class="product-info">
+                    <h3 class="product-title">BCAA 2:1:1 порошок</h3>
+                    <p>Аминокислоты для восстановления, 500 г</p>
+                    <div class="product-price">1 450 ₽</div>
+                    <a href="#" class="btn-buy">В корзину</a>
+                </div>
+            </article>
+
+            <article class="product-card" data-category="creatine">
+                <div class="product-img">
+                    <img
+                        src="696d674d61696e5064708ddc4896f7744e5.jpg"
+                        alt="Креатин моногидрат">
+                </div>
+                <a class="product-details" href="контакты.html">Подробнее</a>
+                <div class="product-info">
+                    <h3 class="product-title">Креатин моногидрат</h3>
+                    <p>Микронизированный, 300 порций, без вкуса</p>
+                    <div class="product-price">2 100 ₽</div>
+                    <a href="#" class="btn-buy">В корзину</a>
+                </div>
+            </article>
+
+            <article class="product-card" data-category="gainer">
+                <div class="product-img">
+                    <img
+                        src="696d674d61696e5064708ddc4f23637b15a.jpg"
+                        alt="Гейнер Mass Gainer">
+                </div>
+                <a class="product-details" href="контакты.html">Подробнее</a>
+                <div class="product-info">
+                    <h3 class="product-title">Гейнер Mass Gainer</h3>
+                    <p>Для набора массы, 3 кг, шоколад</p>
+                    <div class="product-price">4 200 ₽</div>
+                    <a href="#" class="btn-buy">В корзину</a>
+                </div>
+            </article>
+
+            <article class="product-card" data-category="vitamins">
+                <div class="product-img">
+                    <img
+                        src="bd60ae3083d0ee531fa05e3224948faa_12653_1000_1000_tr.jpg"
+                        alt="Комплекс витаминов B">
+                </div>
+                <a class="product-details" href="контакты.html">Подробнее</a>
+                <div class="product-info">
+                    <h3 class="product-title">Комплекс витаминов B</h3>
+                    <p>B1, B2, B3, B5, B6, B7, B9, B12</p>
+                    <div class="product-price">890 ₽</div>
+                    <a href="#" class="btn-buy">В корзину</a>
+                </div>
+            </article>
+
+            <article class="product-card" data-category="energy">
+                <div class="product-img">
+                    <img
+                        src="31o2aw3pudvkjlji7yb78n6lhnwh0qii.jpg"
+                        alt="Энергетический напиток">
+                </div>
+                <a class="product-details" href="контакты.html">Подробнее</a>
+                <div class="product-info">
+                    <h3 class="product-title">Энергетический напиток</h3>
+                    <p>Без сахара, 500 мл, цитрус</p>
+                    <div class="product-price">290 ₽</div>
+                    <a href="#" class="btn-buy">В корзину</a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer id="contacts">
+        <p>&copy; 2024 SportPower. Все права защищены.</p>
+        <p>Телефон: +7 (999) 123-45-67 | Email: info@sportpower.ru</p>
+        <p>Адрес: г. Москва, ул. Спортивная, д. 1</p>
+    </footer>
+
+    <script>
+        const categoryButtons = document.querySelectorAll(".category-card");
+        const productCards = document.querySelectorAll(".product-card");
+        const productsGrid = document.querySelector("#products");
+
+        categoryButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const selectedCategory = button.dataset.filter;
+
+                categoryButtons.forEach((item) => {
+                    const isActive = item === button;
+                    item.classList.toggle("active", isActive);
+                    item.setAttribute("aria-pressed", isActive);
+                });
+
+                productsGrid.classList.add("is-changing");
+
+                setTimeout(() => {
+                    productCards.forEach((card) => {
+                        const shouldShow =
+                            selectedCategory === "all" ||
+                            card.dataset.category === selectedCategory;
+
+                        card.hidden = !shouldShow;
+                    });
+
+                    productsGrid.classList.remove("is-changing");
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
+```
